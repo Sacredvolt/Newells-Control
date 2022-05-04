@@ -4,9 +4,9 @@ from time import sleep
 import threading
 import tkinter as tk
 import csv
-import PSU
-import serial_control
-import valves
+from PSU import *
+from serial_control import *
+from valves import *
 #########################################################
 
 def sputterThread():
