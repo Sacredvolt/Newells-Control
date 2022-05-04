@@ -1,138 +1,4 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Mon May 10 16:57:10 2021
 
-@author: colin
-"""
-#########################################################  
-import serial
-from time import sleep
-import threading
-import tkinter as tk
-import csv
-#########################################################
-
-#Valves Commands
-def ValCloseAll1(delay):
-    ArduinoUnoSerial.write('ac'.encode())
-    sleep(delay)
-    ArduinoUnoSerial.write('bc'.encode())
-    sleep(delay)
-    ArduinoUnoSerial.write('cc'.encode())
-    sleep(delay)
-    ArduinoUnoSerial.write('dc'.encode())
-    sleep(delay)
-    return (0)
-
-def ShutterOpen1(delay):
-    ArduinoUnoSerial.write('ac'.encode())
-    sleep(delay)
-    ArduinoUnoSerial.write('bo'.encode())
-    sleep(delay)
-    ArduinoUnoSerial.write('do'.encode())
-    sleep(delay)
-    ArduinoUnoSerial.write('co'.encode())
-    sleep(delay)
-    ArduinoUnoSerial.write('bc'.encode())
-    sleep(delay)
-    ArduinoUnoSerial.write('cc'.encode())
-    sleep(delay)
-    ArduinoUnoSerial.write('ao'.encode())
-    sleep(delay)
-    return(0)
-
-def ShutterClose1(delay):
-    ArduinoUnoSerial.write('ac'.encode())
-    sleep(delay)
-    ArduinoUnoSerial.write('bo'.encode())
-    sleep(delay)
-    ArduinoUnoSerial.write('do'.encode())
-    sleep(delay)
-    ArduinoUnoSerial.write('co'.encode())
-    sleep(delay)
-    ArduinoUnoSerial.write('bc'.encode())
-    sleep(delay)
-    ArduinoUnoSerial.write('dc'.encode())
-    sleep(delay)
-    ArduinoUnoSerial.write('ao'.encode())
-    sleep(delay)
-
-def ValRelease1(delay):   
-    ArduinoUnoSerial.write('ac'.encode())
-    sleep(delay)
-    ArduinoUnoSerial.write('bo'.encode())
-    sleep(delay)
-    ArduinoUnoSerial.write('do'.encode())
-    sleep(delay)
-    ArduinoUnoSerial.write('co'.encode())
-    sleep(delay)
-    ArduinoUnoSerial.write('dc'.encode())
-    sleep(delay)
-    ArduinoUnoSerial.write('cc'.encode())
-    sleep(delay)
-    ArduinoUnoSerial.write('bc'.encode())
-
-def ShutterOpen2(delay):
-    ArduinoUnoSerial.write('ec'.encode()) #a=e, b=f, c=g, d=h
-    sleep(delay)
-    ArduinoUnoSerial.write('fo'.encode())
-    sleep(delay)
-    ArduinoUnoSerial.write('ho'.encode())
-    sleep(delay)
-    ArduinoUnoSerial.write('go'.encode())
-    sleep(delay)
-    ArduinoUnoSerial.write('fc'.encode())
-    sleep(delay)
-    ArduinoUnoSerial.write('gc'.encode())
-    sleep(delay)
-    ArduinoUnoSerial.write('eo'.encode())
-    sleep(delay)
-    return(0)
-
-def ShutterClose2(delay):
-    ArduinoUnoSerial.write('ec'.encode())
-    sleep(delay)
-    ArduinoUnoSerial.write('fo'.encode())
-    sleep(delay)
-    ArduinoUnoSerial.write('ho'.encode())
-    sleep(delay)
-    ArduinoUnoSerial.write('go'.encode())
-    sleep(delay)
-    ArduinoUnoSerial.write('fc'.encode())
-    sleep(delay)
-    ArduinoUnoSerial.write('hc'.encode())
-    sleep(delay)
-    ArduinoUnoSerial.write('eo'.encode())
-    sleep(delay)
-
-def ValRelease2(delay):   
-    ArduinoUnoSerial.write('ec'.encode())
-    sleep(delay)
-    ArduinoUnoSerial.write('fo'.encode())
-    sleep(delay)
-    ArduinoUnoSerial.write('ho'.encode())
-    sleep(delay)
-    ArduinoUnoSerial.write('go'.encode())
-    sleep(delay)
-    ArduinoUnoSerial.write('hc'.encode())
-    sleep(delay)
-    ArduinoUnoSerial.write('gc'.encode())
-    sleep(delay)
-    ArduinoUnoSerial.write('fc'.encode())
-    
-def GunSelect(num):
-    print ("selecting gun "+str(num))
-    if num==1:
-        ArduinoUnoSerial.write('t'.encode())
-        sleep(delay)
-    if num==2:
-        ArduinoUnoSerial.write('s'.encode())
-        sleep(delay)
-    # else:
-    #     print ("Invalid Input, Enter 1 or 2")
-    print ("RF switch set to gun " +str(num))
-
-#PSU Commands
 def GenerateCommand(CMDID, PARM1, PARM2):
     HEAD='43'
     ADDR='01'
@@ -298,28 +164,11 @@ def sputterThread():
         entry42.grid(row=4, column=1)
         button4=tk.Button(buttonFrame, text="Confirm", fg='white', bg='grey', command=lambda: threading.Thread(openValvesfor(int(entry42.get()), int(entry4.get()))))
         button4.grid(row=3, column=2, rowspan=2)
-        
-# =============================================================================
-#         powerFrame=tk.Frame(root, bg="black", bd=10)
-#         powerFrame.place(relx=0.62, rely=0.01, relwidth=0.37, relheight=0.98)
-#         
-#         FPLabel=tk.Label(powerFrame, text="Forward Power: ", fg="white", bg="black")
-#         FPLabel.grid(row=0, column=0)
-#         FPLabel2=tk.Label(powerFrame, text="WIP", fg="white", bg="black")
-#         FPLabel2.grid(row=0, column=1)
-#         RPLabel=tk.Label(powerFrame, text="Reverse Power: ", fg="white", bg="black")
-#         RPLabel.grid(row=1, column=0)
-#         RPLabel2=tk.Label(powerFrame, text="WIP", fg="white", bg="black")
-#         RPLabel2.grid(row=1, column=1)
-#         DCLabel=tk.Label(powerFrame, text="DC Power: ", fg="white", bg="black")
-#         DCLabel.grid(row=2, column=0)
-#         DCLabel2=tk.Label(powerFrame, text="WIP", fg="white", bg="black")
-#         DCLabel2.grid(row=2, column=1)
-# =============================================================================
-        
+                
         root.mainloop()
         isRunning=False
     return
+
 ser = serial.Serial('/dev/ttyUSB0', 38400, timeout=0.5, bytesize=serial.EIGHTBITS, parity=serial.PARITY_NONE,  stopbits=1, rtscts=0, xonxoff=0)
 ArduinoUnoSerial = serial.Serial('/dev/ttyACM0', 9600) 
 isRunning=True
