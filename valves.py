@@ -116,3 +116,28 @@ def GunSelect(num):
     # else:
     #     print ("Invalid Input, Enter 1 or 2")
     print ("RF switch set to gun " +str(num))
+    
+def openValvesfor(gun, s_timer):
+    global isRunning
+    global isSputtering
+    print ("You will sputter Gun " + str(gun) +"for" +str(s_timer) +"seconds" )
+    GunSelect(gun)
+    if gun==1:
+        ValRelease1(delay)
+        ShutterOpen1(delay)
+        sleep(s_timer-4)
+        ShutterClose1(delay)
+        ValRelease1(delay)
+        print ("sputtering done on gun 1")
+    elif gun==2:
+        ValRelease2(delay)
+        ShutterOpen2(delay)
+        sleep(s_timer-4)
+        ShutterClose2(delay)
+        ValRelease2(delay)
+        print ("sputtering done on gun 2")
+    sleep(delay)
+    DeactivateRF()
+    isSputtering=False
+    sleep(delay)
+    SetPower(0)

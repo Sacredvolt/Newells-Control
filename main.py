@@ -57,34 +57,35 @@ def sputterThread():
         isRunning=False
     return
 
-ser = serial.Serial('/dev/ttyUSB0', 38400, timeout=0.5, bytesize=serial.EIGHTBITS, parity=serial.PARITY_NONE,  stopbits=1, rtscts=0, xonxoff=0)
-ArduinoUnoSerial = serial.Serial('/dev/ttyACM0', 9600) 
-isRunning=True
-delay=0.5 #donotchange
-HEIGHT=400
-WIDTH=800
-isRFOn=False
-isSputtering=False
-forwardPower=0
-reversePower=0
-loadPower=0
-sputter = threading.Thread(target=sputterThread)
-sputter.start()
+def main():
+    tryToOpenPSUPort()
+    ArduinoUnoSerial = serial.Serial('/dev/ttyACM0', 9600) 
+    isRunning=True
+    delay=0.5 #donotchange
+    HEIGHT=400
+    WIDTH=800
+    isRFOn=False
+    isSputtering=False
+    forwardPower=0
+    reversePower=0
+    loadPower=0
+    sputter = threading.Thread(target=sputterThread)
+    sputter.start()
 
-while isRunning==True:
-    pingOnce()
-    print("ping")
-    sleep(0.7)
-    if isRFOn==True:
-        forwardPower, reversePower, loadPower=GetPower()
-        if isSputtering:
-            if loadPower==0:
-                DeactivateRF()
-                print("PSU Shorted, please wait for timer to finish before continuing")
-        with open('power.csv', 'w', newline='') as f:
-            thewriter=csv.writer(f)
+    while isRunning==True:
+        pingOnce()
+        print("ping")
+        sleep(0.7)
+        if isRFOn==True:
             forwardPower, reversePower, loadPower=GetPower()
-            thewriter.writerow([forwardPower, reversePower, loadPower])
+            if isSputtering:
+                if loadPower==0:
+                    DeactivateRF()
+                    print("PSU Shorted, please wait for timer to finish before continuing")
+            with open('power.csv', 'w', newline='') as f:
+                thewriter=csv.writer(f)
+                forwardPower, reversePower, loadPower=GetPower()
+                thewriter.writerow([forwardPower, reversePower, loadPower])
 
-ArduinoUnoSerial.close()
-ser.close()
+    ArduinoUnoSerial.close()
+    ser.close()
