@@ -1,6 +1,6 @@
 #########################################################  
 import serial
-from time import sleep
+from threading import sleep
 import threading
 import tkinter as tk
 import csv
@@ -15,6 +15,8 @@ def sputterThread():
     global HEIGHT
     global WIDTH
     global isRFOn
+    global percentageDone
+    
     while isRunning==True:
         GetControl()
         root = tk.Tk()
@@ -50,7 +52,7 @@ def sputterThread():
         label42.grid(row=4, column=0)
         entry42=tk.Entry(buttonFrame, bg='grey')
         entry42.grid(row=4, column=1)
-        button4=tk.Button(buttonFrame, text="Confirm", fg='white', bg='grey', command=lambda: threading.Thread(openValvesfor(int(entry42.get()), int(entry4.get()))))
+        button4=tk.Button(buttonFrame, text="Confirm", fg='white', bg='grey', command=lambda:threading.Thread(openValvesfor(int(entry42.get()), int(entry4.get()))))
         button4.grid(row=3, column=2, rowspan=2)
                 
         root.mainloop()
@@ -69,6 +71,8 @@ def main():
     forwardPower=0
     reversePower=0
     loadPower=0
+    donePercent=0
+    timer=0
     sputter = threading.Thread(target=sputterThread)
     sputter.start()
 
@@ -82,6 +86,7 @@ def main():
                 if loadPower==0:
                     DeactivateRF()
                     print("PSU Shorted, please wait for timer to finish before continuing")
+                    print("Time Sputtered: " + str(timer) + "\n" + "Percent Sputtered: " + str(donePercent))
             with open('power.csv', 'w', newline='') as f:
                 thewriter=csv.writer(f)
                 forwardPower, reversePower, loadPower=GetPower()
