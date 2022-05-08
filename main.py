@@ -83,6 +83,7 @@ def main():
         if isRFOn==True:
             forwardPower, reversePower, loadPower=GetPower()
             if isSputtering:
+                print('Current Time Sputtered: ' + str(timer) + " ," + str(donePercent) + "%")
                 if loadPower==0:
                     DeactivateRF()
                     print("PSU Shorted, please wait for timer to finish before continuing")

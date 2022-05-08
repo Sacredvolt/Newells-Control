@@ -57,46 +57,76 @@ def SetPower(desiredPower):
         CKSUM=CKSUM+i
     CKSUM=CKSUM.to_bytes(2, 'big')      #converts integer CHKSUM to 2-byte hex, high byte first (big)
     command=command+CKSUM #appends 2-byte CHKSUM to command
-    print(command.hex())
     reply=SendCommand(command)
     return reply
-        
+
+def setTunerAuto():
+    return GenAndSend('544D', '0001', '0000')
+
+def setTunerManual():
+    return GenAndSend('544D', '0002', '0000')
+
+def setLoadTunerCapPosition():
+    desiredLoad=int(30)
+    desiredLoad=desiredLoad.to_bytes(2,'big')
+    HEAD='43'
+    ADDR='01'
+    CMDID='5443'
+    CKSUM=0
+    command1=bytearray.fromhex(HEAD+ADDR+CMDID)
+    command2=bytearray.fromhex('0001')
+    command=command1+command2+desiredLoad
+    for i in command:       #spits out CKSUM in decimal as integer
+        CKSUM=CKSUM+i
+    CKSUM=CKSUM.to_bytes(2, 'big')      #converts integer CHKSUM to 2-byte hex, high byte first (big)
+    command=command+CKSUM #appends 2-byte CHKSUM to command
+    reply=SendCommand(command)   
+    return reply
+
+def setTuneTunerCapPosition():
+    desiredTune=int(70)
+    desiredTune=desiredTune.to_bytes(2,'big')
+    HEAD='43'
+    ADDR='01'
+    CMDID='5443'
+    CKSUM=0
+    command1=bytearray.fromhex(HEAD+ADDR+CMDID)
+    command2=bytearray.fromhex('0002')
+    command=command1+command2+desiredTune
+    for i in command:       #spits out CKSUM in decimal as integer
+        CKSUM=CKSUM+i
+    CKSUM=CKSUM.to_bytes(2, 'big')      #converts integer CHKSUM to 2-byte hex, high byte first (big)
+    command=command+CKSUM #appends 2-byte CHKSUM to command
+    reply=SendCommand(command)   
+    return reply
+
+def autoSetTunerCaps():
+    setTunerManual()
+    sleep(0.1)
+    setLoadTunerCapPosition()
+    sleep(0.1)
+    setTuneTunerCapPosition()
+    sleep(0.1)
+    setTunerAuto()
+    sleep(0.1)
+    return
+
 def ActivateRF():
     global isRFOn
+    setTunerManual()
+    sleep(0.1)
+    setLoadTunerCapPosition()
+    sleep(0.1)
+    setTuneTunerCapPosition()
+    sleep(0.1)
+    setTunerAuto()
+    sleep(0.1)
     reply=GenAndSend('4252','5555','0000')
-    print(reply.hex())
     isRFOn=True
     return reply
 
 def DeactivateRF():
     global isRFOn
     reply=GenAndSend('4252','0000','0000')
-    print(reply.hex())
     isRFOn=False
     return reply
-#########################################################
-        
-def openValvesfor(gun, s_timer):
-    global isRunning
-    global isSputtering
-    print ("You will sputter Gun " + str(gun) +"for" +str(s_timer) +"seconds" )
-    GunSelect(gun)
-    if gun==1:
-        ValRelease1(delay)
-        ShutterOpen1(delay)
-        sleep(s_timer-4)
-        ShutterClose1(delay)
-        ValRelease1(delay)
-        print ("sputtering done on gun 1")
-    elif gun==2:
-        ValRelease2(delay)
-        ShutterOpen2(delay)
-        sleep(s_timer-4)
-        ShutterClose2(delay)
-        ValRelease2(delay)
-        print ("sputtering done on gun 2")
-    sleep(delay)
-    DeactivateRF()
-    isSputtering=False
-    sleep(delay)
-    SetPower(0)
