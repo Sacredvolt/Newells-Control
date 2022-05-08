@@ -121,7 +121,7 @@ def openValvesfor(gun, s_timer):
     global isRunning
     global isSputtering
     global donePercent
-    timer=0
+    global timer
     print ("You will sputter Gun " + str(gun) +"for" +str(s_timer) +"seconds" )
     GunSelect(gun)
     if gun==1:
