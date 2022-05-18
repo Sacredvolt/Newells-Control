@@ -78,6 +78,7 @@ def main():
     ArduinoUnoSerial = serial.Serial(findPort(ArduinoPort), 9600) 
     isRunning=True
     delay=0.5 #donotchange
+    sleep(delay)
     HEIGHT=400
     WIDTH=800
     isRFOn=False
@@ -110,3 +111,5 @@ def main():
 
     ArduinoUnoSerial.close()
     ser.close()
+
+main()
