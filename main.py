@@ -107,13 +107,13 @@ def setTuneTunerCapPosition():
 
 def autoSetTunerCaps():
     reply = setTunerManual()
-    sleep(0.1)
+    event.wait(0.1)
     reply = setLoadTunerCapPosition()
-    sleep(0.5)
+    event.wait(0.5)
     reply = setTuneTunerCapPosition()
-    sleep(0.5)
+    event.wait(0.5)
     reply = setTunerAuto()
-    sleep(0.1)
+    event.wait(0.1)
     return reply
 
 def ActivateRF():
@@ -292,7 +292,7 @@ def openValvesfor(gun, s_timer):
         #sleep(s_timer-4)
         timer+=4
         while timer<s_timer:
-            sleep(1)
+            event.wait(1)
             timer+=1
             donePercent=round((timer/(s_timer) * 100),2)
         ShutterClose1(delay)
@@ -304,18 +304,18 @@ def openValvesfor(gun, s_timer):
         #sleep(s_timer-4)
         timer+=4
         while timer<s_timer:
-            sleep(1)
+            event.wait(1)
             timer+=1
             donePercent=round((timer/(s_timer-4) * 100),2)
         ShutterClose2(delay)
         ValRelease2(delay)
         print ("sputtering done on gun 2")
-    sleep(delay)
+    event.wait(delay)
     DeactivateRF()
     timer=0
     donePercent=0
     isSputtering=False
-    sleep(delay)
+    event.wait(delay)
     SetPower(0)
 
 ###############################################################################################################
@@ -329,9 +329,9 @@ def sputterThread():
     global percentageDone
     
     while isRunning==True:
-        sleep(1)
+        event.wait(1)
         GetControl()
-        sleep(1)
+        event.wait(1)
         root = tk.Tk()
         canvas=tk.Canvas(root, height=HEIGHT, width=WIDTH)
         canvas.pack()
@@ -403,7 +403,7 @@ def main():
     ArduinoUnoSerial = serial.Serial(findPort(ArduinoPID), 9600) 
     isRunning=True
     delay=0.5 #donotchange
-    sleep(delay)
+    event.wait(delay)
     HEIGHT=600
     WIDTH=600
     isRFOn=False
@@ -420,10 +420,9 @@ def main():
     while isRunning==True:
         pingOnce()
         print("ping")
-        sleep(0.7)
+        event.wait(0.7)
         if isRFOn==True:
             forwardPower, reversePower, loadPower=GetPower()
-            # sleep(1.0)
             if isSputtering:
                 print('Current Time Sputtered: ' + str(timer) + " ," + str(donePercent) + "%")
                 if loadPower==0:
