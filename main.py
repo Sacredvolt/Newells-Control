@@ -127,6 +127,9 @@ def DeactivateRF():
     global isRFOn
     reply=GenAndSend('4252','0000','0000')
     isRFOn=False
+    isSputtering=False
+    timer=0
+    donePercent=0
     return reply
 
 ###############################################################################################################
@@ -418,8 +421,6 @@ def main():
     sputter.start()
 
     while isRunning==True:
-        pingOnce()
-        print("ping")
         event.wait(0.7)
         if isRFOn==True:
             forwardPower, reversePower, loadPower=GetPower()
@@ -430,6 +431,9 @@ def main():
                     timer=s_timer+1
                     print("PSU Shorted, please wait for valves to close before continuing")
                     print("Time Sputtered: " + str(timer) + "\n" + "Percent Sputtered: " + str(donePercent))
+        else:
+            pingOnce()
+            print("ping")
     
     ArduinoUnoSerial.close()
     ser.close()
