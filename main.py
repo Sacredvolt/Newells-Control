@@ -4,10 +4,318 @@ from time import sleep
 import threading
 import tkinter as tk
 import csv
-from PSU import *
-from serial_control import *
-from valves import *
 #########################################################
+def GenerateCommand(CMDID, PARM1, PARM2):
+    HEAD='43'
+    ADDR='01'
+    command=bytearray.fromhex(HEAD+ADDR+CMDID+PARM1+PARM2)
+    CKSUM=0
+    for i in command:       #spits out CKSUM in decimal as integer
+        CKSUM=CKSUM+i
+    CKSUM=CKSUM.to_bytes(2, 'big')      #converts integer CHKSUM to 2-byte hex, high byte first (big)
+    command=command+CKSUM #appends 2-byte CHKSUM to command
+    return command
+
+def SendCommand(command):
+    ser.write(command)
+    reading=ser.read(50)
+    return reading
+
+def GenAndSend(CMDID, PARM1, PARM2):
+    command=GenerateCommand(CMDID, PARM1, PARM2)
+    reading=SendCommand(command)
+    return reading
+
+def pingOnce():
+    replyPing=GenAndSend('4250','0000','0000')
+    return replyPing
+        
+def GetControl():
+    reply=GenAndSend('4243','5555','0000')
+    print(reply.hex())
+    return reply
+
+def RelControl():
+    reply=GenAndSend('4243','0000','0000')
+    print(reply.hex())
+    return reply
+
+def GetPower():
+    reply=GenAndSend('4750','0000','0000')
+    reply=reply[5:-2]
+    forwardPower=reply[:2]
+    reversePower=reply[2:4]
+    loadPower=reply[4:]
+    print(forwardPower, reversePower, loadPower)
+    return forwardPower, reversePower, loadPower
+
+def SetPower(desiredPower):
+    desiredPower=int(desiredPower)
+    desiredPower=desiredPower.to_bytes(2,'big')
+    HEAD='43'
+    ADDR='01'
+    CMDID='5341'
+    CKSUM=0
+    command1=bytearray.fromhex(HEAD+ADDR+CMDID)
+    command2=bytearray.fromhex('0000')
+    command=command1+desiredPower+command2
+    for i in command:       #spits out CKSUM in decimal as integer
+        CKSUM=CKSUM+i
+    CKSUM=CKSUM.to_bytes(2, 'big')      #converts integer CHKSUM to 2-byte hex, high byte first (big)
+    command=command+CKSUM #appends 2-byte CHKSUM to command
+    reply=SendCommand(command)
+    return reply
+
+def setTunerAuto():
+    return GenAndSend('544D', '0001', '0000')
+
+def setTunerManual():
+    return GenAndSend('544D', '0002', '0000')
+
+def setLoadTunerCapPosition():
+    desiredLoad=int(30)
+    desiredLoad=desiredLoad.to_bytes(2,'big')
+    HEAD='43'
+    ADDR='01'
+    CMDID='5443'
+    CKSUM=0
+    command1=bytearray.fromhex(HEAD+ADDR+CMDID)
+    command2=bytearray.fromhex('0001')
+    command=command1+command2+desiredLoad
+    for i in command:       #spits out CKSUM in decimal as integer
+        CKSUM=CKSUM+i
+    CKSUM=CKSUM.to_bytes(2, 'big')      #converts integer CHKSUM to 2-byte hex, high byte first (big)
+    command=command+CKSUM #appends 2-byte CHKSUM to command
+    reply=SendCommand(command)   
+    return reply
+
+def setTuneTunerCapPosition():
+    desiredTune=int(70)
+    desiredTune=desiredTune.to_bytes(2,'big')
+    HEAD='43'
+    ADDR='01'
+    CMDID='5443'
+    CKSUM=0
+    command1=bytearray.fromhex(HEAD+ADDR+CMDID)
+    command2=bytearray.fromhex('0002')
+    command=command1+command2+desiredTune
+    for i in command:       #spits out CKSUM in decimal as integer
+        CKSUM=CKSUM+i
+    CKSUM=CKSUM.to_bytes(2, 'big')      #converts integer CHKSUM to 2-byte hex, high byte first (big)
+    command=command+CKSUM #appends 2-byte CHKSUM to command
+    reply=SendCommand(command)   
+    return reply
+
+def autoSetTunerCaps():
+    setTunerManual()
+    sleep(0.1)
+    setLoadTunerCapPosition()
+    sleep(0.1)
+    setTuneTunerCapPosition()
+    sleep(0.1)
+    setTunerAuto()
+    sleep(0.1)
+    return
+
+def ActivateRF():
+    global isRFOn
+    setTunerManual()
+    sleep(0.1)
+    setLoadTunerCapPosition()
+    sleep(0.1)
+    setTuneTunerCapPosition()
+    sleep(0.1)
+    setTunerAuto()
+    sleep(0.1)
+    reply=GenAndSend('4252','5555','0000')
+    isRFOn=True
+    return reply
+
+def DeactivateRF():
+    global isRFOn
+    reply=GenAndSend('4252','0000','0000')
+    isRFOn=False
+    return reply
+
+###############################################################################################################
+
+PSUPort="USB Serial Port"
+ArduinoPort="Arduino Uno"
+WinPSUComport1="COM6"
+WinPSUComport2="COM5"
+LinuxPSUComport1="/dev/ttyUSB0"
+LinuxPSUComport2="/dev/ttyUSB1"
+
+def findPort(portName):
+    try:
+        from serial.tools.list_ports import comports
+    except ImportError:
+        return None
+    if comports:
+        com_ports_list = list(comports())
+        foundPort = None
+        for port in com_ports_list:
+            if port[1].startswith(portName):
+                foundPort = port[0]  # Success; found by name match.
+                break  # stop searching-- we are done.
+        return foundPort 
+###############################################################################################################
+                
+def ValCloseAll1(delay):
+    ArduinoUnoSerial.write('ac'.encode())
+    sleep(delay)
+    ArduinoUnoSerial.write('bc'.encode())
+    sleep(delay)
+    ArduinoUnoSerial.write('cc'.encode())
+    sleep(delay)
+    ArduinoUnoSerial.write('dc'.encode())
+    sleep(delay)
+    return (0)
+
+def ShutterOpen1(delay):
+    ArduinoUnoSerial.write('ac'.encode())
+    sleep(delay)
+    ArduinoUnoSerial.write('bo'.encode())
+    sleep(delay)
+    ArduinoUnoSerial.write('do'.encode())
+    sleep(delay)
+    ArduinoUnoSerial.write('co'.encode())
+    sleep(delay)
+    ArduinoUnoSerial.write('bc'.encode())
+    sleep(delay)
+    ArduinoUnoSerial.write('cc'.encode())
+    sleep(delay)
+    ArduinoUnoSerial.write('ao'.encode())
+    sleep(delay)
+    return(0)
+
+def ShutterClose1(delay):
+    ArduinoUnoSerial.write('ac'.encode())
+    sleep(delay)
+    ArduinoUnoSerial.write('bo'.encode())
+    sleep(delay)
+    ArduinoUnoSerial.write('do'.encode())
+    sleep(delay)
+    ArduinoUnoSerial.write('co'.encode())
+    sleep(delay)
+    ArduinoUnoSerial.write('bc'.encode())
+    sleep(delay)
+    ArduinoUnoSerial.write('dc'.encode())
+    sleep(delay)
+    ArduinoUnoSerial.write('ao'.encode())
+    sleep(delay)
+
+def ValRelease1(delay):   
+    ArduinoUnoSerial.write('ac'.encode())
+    sleep(delay)
+    ArduinoUnoSerial.write('bo'.encode())
+    sleep(delay)
+    ArduinoUnoSerial.write('do'.encode())
+    sleep(delay)
+    ArduinoUnoSerial.write('co'.encode())
+    sleep(delay)
+    ArduinoUnoSerial.write('dc'.encode())
+    sleep(delay)
+    ArduinoUnoSerial.write('cc'.encode())
+    sleep(delay)
+    ArduinoUnoSerial.write('bc'.encode())
+
+def ShutterOpen2(delay):
+    ArduinoUnoSerial.write('ec'.encode()) #a=e, b=f, c=g, d=h
+    sleep(delay)
+    ArduinoUnoSerial.write('fo'.encode())
+    sleep(delay)
+    ArduinoUnoSerial.write('ho'.encode())
+    sleep(delay)
+    ArduinoUnoSerial.write('go'.encode())
+    sleep(delay)
+    ArduinoUnoSerial.write('fc'.encode())
+    sleep(delay)
+    ArduinoUnoSerial.write('gc'.encode())
+    sleep(delay)
+    ArduinoUnoSerial.write('eo'.encode())
+    sleep(delay)
+    return(0)
+
+def ShutterClose2(delay):
+    ArduinoUnoSerial.write('ec'.encode())
+    sleep(delay)
+    ArduinoUnoSerial.write('fo'.encode())
+    sleep(delay)
+    ArduinoUnoSerial.write('ho'.encode())
+    sleep(delay)
+    ArduinoUnoSerial.write('go'.encode())
+    sleep(delay)
+    ArduinoUnoSerial.write('fc'.encode())
+    sleep(delay)
+    ArduinoUnoSerial.write('hc'.encode())
+    sleep(delay)
+    ArduinoUnoSerial.write('eo'.encode())
+    sleep(delay)
+
+def ValRelease2(delay):   
+    ArduinoUnoSerial.write('ec'.encode())
+    sleep(delay)
+    ArduinoUnoSerial.write('fo'.encode())
+    sleep(delay)
+    ArduinoUnoSerial.write('ho'.encode())
+    sleep(delay)
+    ArduinoUnoSerial.write('go'.encode())
+    sleep(delay)
+    ArduinoUnoSerial.write('hc'.encode())
+    sleep(delay)
+    ArduinoUnoSerial.write('gc'.encode())
+    sleep(delay)
+    ArduinoUnoSerial.write('fc'.encode())
+    
+def GunSelect(num):
+    print ("selecting gun "+str(num))
+    if num==1:
+        ArduinoUnoSerial.write('t'.encode())
+        sleep(delay)
+    if num==2:
+        ArduinoUnoSerial.write('s'.encode())
+        sleep(delay)
+    # else:
+    #     print ("Invalid Input, Enter 1 or 2")
+    print ("RF switch set to gun " +str(num))
+    
+def openValvesfor(gun, s_timer):
+    global isRunning
+    global isSputtering
+    global donePercent
+    global timer
+    print ("You will sputter Gun " + str(gun) +"for" +str(s_timer) +"seconds" )
+    GunSelect(gun)
+    if gun==1:
+        ValRelease1(delay)
+        ShutterOpen1(delay)
+        #sleep(s_timer-4)
+        while timer<s_timer-4:
+            sleep(1)
+            timer+=1
+            donePercent=round((timer/(s_timer-4) * 100),2)
+        ShutterClose1(delay)
+        ValRelease1(delay)
+        print ("sputtering done on gun 1")
+    elif gun==2:
+        ValRelease2(delay)
+        ShutterOpen2(delay)
+        #sleep(s_timer-4)
+        while timer<s_timer-4:
+            sleep(1)
+            timer+=1
+            donePercent=round((timer/(s_timer-4) * 100),2)
+        ShutterClose2(delay)
+        ValRelease2(delay)
+        print ("sputtering done on gun 2")
+    sleep(delay)
+    DeactivateRF()
+    isSputtering=False
+    sleep(delay)
+    SetPower(0)
+
+###############################################################################################################
 
 def sputterThread():
     global isRunning
