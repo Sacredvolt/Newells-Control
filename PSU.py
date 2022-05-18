@@ -1,4 +1,3 @@
-
 def GenerateCommand(CMDID, PARM1, PARM2):
     HEAD='43'
     ADDR='01'

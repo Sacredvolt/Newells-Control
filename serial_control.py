@@ -1,7 +1,10 @@
 import serial
 from time import sleep
 
+from PSU import GetControl, RelControl, autoSetTunerCaps
+
 PSUPort="USB Serial Port"
+ArduinoPort="Arduino Uno"
 WinPSUComport1="COM6"
 WinPSUComport2="COM5"
 LinuxPSUComport1="/dev/ttyUSB0"
@@ -20,23 +23,5 @@ def findPort(portName):
                 foundPort = port[0]  # Success; found by name match.
                 break  # stop searching-- we are done.
         return foundPort 
-    
-def tryToOpenPSUPort(): 
-    try:
-        ser = serial.Serial(LinuxPSUComport1, 38400, timeout=0.5, bytesize=serial.EIGHTBITS, parity=serial.PARITY_NONE,  stopbits=1, rtscts=0, xonxoff=0)
-        print('connected')
-    except serial.SerialException:
-        try:
-            ser = serial.Serial(LinuxPSUComport2, 38400, timeout=0.5, bytesize=serial.EIGHTBITS, parity=serial.PARITY_NONE,  stopbits=1, rtscts=0, xonxoff=0)
-            print('connected')
-        except serial.SerialException:
-            try:
-                ser = serial.Serial(WinPSUComport1, 38400, timeout=0.5, bytesize=serial.EIGHTBITS, parity=serial.PARITY_NONE,  stopbits=1, rtscts=0, xonxoff=0)
-                print('connected')
-            except serial.SerialException:
-                try:
-                    ser = serial.Serial(WinPSUComport2, 38400, timeout=0.5, bytesize=serial.EIGHTBITS, parity=serial.PARITY_NONE,  stopbits=1, rtscts=0, xonxoff=0)
-                    print('connected')
-                except serial.SerialException:
-                    print('can not find port, aborting')
-                    return None
+                
+
