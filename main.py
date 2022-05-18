@@ -3,7 +3,6 @@ import serial
 from time import sleep
 import threading
 import tkinter as tk
-import csv
 #########################################################
 def GenerateCommand(CMDID, PARM1, PARM2):
     HEAD='43'
@@ -134,10 +133,8 @@ def DeactivateRF():
 
 PSUPort="USB Serial Port"
 ArduinoPort="Arduino Uno"
-WinPSUComport1="COM6"
-WinPSUComport2="COM5"
-LinuxPSUComport1="/dev/ttyUSB0"
-LinuxPSUComport2="/dev/ttyUSB1"
+PSUPID="USB VID:PID=0403:6001"
+ArduinoPID="USB VID:PID=2341:004"
 
 def findPort(portName):
     try:
@@ -145,13 +142,19 @@ def findPort(portName):
     except ImportError:
         return None
     if comports:
-        com_ports_list = list(comports())
+        com_ports_list = comports()
+        ports=[]
+        for port, desc, hwid in sorted(com_ports_list):
+            ports.append([port, desc, hwid])
+        
         foundPort = None
-        for port in com_ports_list:
-            if port[1].startswith(portName):
+        for port in ports:
+            if port[2].startswith(portName):
                 foundPort = port[0]  # Success; found by name match.
                 break  # stop searching-- we are done.
+        print(foundPort)
         return foundPort 
+    
 ###############################################################################################################
                 
 def ValCloseAll1(delay):
@@ -325,7 +328,9 @@ def sputterThread():
     global percentageDone
     
     while isRunning==True:
+        sleep(1)
         GetControl()
+        sleep(1)
         root = tk.Tk()
         canvas=tk.Canvas(root, height=HEIGHT, width=WIDTH)
         canvas.pack()
@@ -393,8 +398,8 @@ def main():
     global loadPower
     global donePercent
     
-    ser=serial.Serial(findPort(PSUPort), 38400, timeout=0.5, bytesize=serial.EIGHTBITS, parity=serial.PARITY_NONE,  stopbits=1, rtscts=0, xonxoff=0)
-    ArduinoUnoSerial = serial.Serial(findPort(ArduinoPort), 9600) 
+    ser=serial.Serial(findPort(PSUPID), 38400, timeout=0.5, bytesize=serial.EIGHTBITS, parity=serial.PARITY_NONE,  stopbits=1, rtscts=0, xonxoff=0)
+    ArduinoUnoSerial = serial.Serial(findPort(ArduinoPID), 9600) 
     isRunning=True
     delay=0.5 #donotchange
     sleep(delay)
