@@ -107,26 +107,19 @@ def setTuneTunerCapPosition():
     return reply
 
 def autoSetTunerCaps():
-    setTunerManual()
+    reply = setTunerManual()
     sleep(0.1)
-    setLoadTunerCapPosition()
+    reply = setLoadTunerCapPosition()
+    sleep(0.5)
+    reply = setTuneTunerCapPosition()
+    sleep(0.5)
+    reply = setTunerAuto()
     sleep(0.1)
-    setTuneTunerCapPosition()
-    sleep(0.1)
-    setTunerAuto()
-    sleep(0.1)
-    return
+    return reply
 
 def ActivateRF():
     global isRFOn
-    setTunerManual()
-    sleep(0.1)
-    setLoadTunerCapPosition()
-    sleep(0.1)
-    setTuneTunerCapPosition()
-    sleep(0.1)
-    setTunerAuto()
-    sleep(0.1)
+    autoSetTunerCaps()
     reply=GenAndSend('4252','5555','0000')
     isRFOn=True
     return reply
@@ -285,16 +278,19 @@ def openValvesfor(gun, s_timer):
     global isSputtering
     global donePercent
     global timer
+    
     print ("You will sputter Gun " + str(gun) +"for" +str(s_timer) +"seconds" )
     GunSelect(gun)
+    isSputtering=True
     if gun==1:
         ValRelease1(delay)
         ShutterOpen1(delay)
         #sleep(s_timer-4)
-        while timer<s_timer-4:
+        timer+=4
+        while timer<s_timer:
             sleep(1)
             timer+=1
-            donePercent=round((timer/(s_timer-4) * 100),2)
+            donePercent=round((timer/(s_timer) * 100),2)
         ShutterClose1(delay)
         ValRelease1(delay)
         print ("sputtering done on gun 1")
@@ -302,7 +298,8 @@ def openValvesfor(gun, s_timer):
         ValRelease2(delay)
         ShutterOpen2(delay)
         #sleep(s_timer-4)
-        while timer<s_timer-4:
+        timer+=4
+        while timer<s_timer:
             sleep(1)
             timer+=1
             donePercent=round((timer/(s_timer-4) * 100),2)
@@ -311,6 +308,8 @@ def openValvesfor(gun, s_timer):
         print ("sputtering done on gun 2")
     sleep(delay)
     DeactivateRF()
+    timer=0
+    donePercent=0
     isSputtering=False
     sleep(delay)
     SetPower(0)
@@ -332,7 +331,7 @@ def sputterThread():
         canvas.pack()
         
         buttonFrame=tk.Frame(root, bg="black", bd=10)
-        buttonFrame.place(relx = 0.01,rely=0.01, relwidth=0.6, relheight=0.98)        
+        buttonFrame.place(relx = 0.01,rely=0.01, relwidth=0.98, relheight=0.98)        
         button1 = tk.Button(buttonFrame, text="Get Control", fg='white', bg='grey', command=lambda: GetControl())
         button1.grid(row=0, column=0, columnspan=3, ipadx=70)
         
@@ -363,6 +362,18 @@ def sputterThread():
         button4=tk.Button(buttonFrame, text="Confirm", fg='white', bg='grey', command=lambda:threading.Thread(openValvesfor(int(entry42.get()), int(entry4.get()))))
         button4.grid(row=3, column=2, rowspan=2)
                 
+        # label5 = tk.Label(buttonFrame, text="Set Tuner Caps", fg='white', bg='black')
+        # label5.grid(row=5, column=0)
+        # button5=tk.Button(buttonFrame, text="Confirm", fg='white', bg='grey', command=lambda:autoSetTunerCaps())
+        # button5.grid(row=5, column=1, rowspan=1)
+        
+        # label6 = tk.Label(buttonFrame, text="Set Tuner Caps", fg='white', bg='black')
+        # label6.grid(row=6, column=0)
+        # button6=tk.Button(buttonFrame, text="Manual", fg='white', bg='grey', command=lambda:setTunerManual())
+        # button6.grid(row=6, column=1, rowspan=1)
+        # button62=tk.Button(buttonFrame, text="Auto", fg='white', bg='grey', command=lambda:setTunerAuto())
+        # button62.grid(row=6, column=2, rowspan=1)
+        
         root.mainloop()
         isRunning=False
     return
@@ -387,8 +398,8 @@ def main():
     isRunning=True
     delay=0.5 #donotchange
     sleep(delay)
-    HEIGHT=400
-    WIDTH=800
+    HEIGHT=600
+    WIDTH=600
     isRFOn=False
     isSputtering=False
     forwardPower=0
@@ -406,17 +417,15 @@ def main():
         sleep(0.7)
         if isRFOn==True:
             forwardPower, reversePower, loadPower=GetPower()
+            # sleep(1.0)
             if isSputtering:
                 print('Current Time Sputtered: ' + str(timer) + " ," + str(donePercent) + "%")
                 if loadPower==0:
                     DeactivateRF()
                     print("PSU Shorted, please wait for timer to finish before continuing")
                     print("Time Sputtered: " + str(timer) + "\n" + "Percent Sputtered: " + str(donePercent))
-            with open('power.csv', 'w', newline='') as f:
-                thewriter=csv.writer(f)
-                forwardPower, reversePower, loadPower=GetPower()
-                thewriter.writerow([forwardPower, reversePower, loadPower])
 
+    
     ArduinoUnoSerial.close()
     ser.close()
 
