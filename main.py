@@ -281,6 +281,7 @@ def openValvesfor(gun, s_timer):
     global isSputtering
     global donePercent
     global timer
+    global s_timer
     
     print ("You will sputter Gun " + str(gun) +"for" +str(s_timer) +"seconds" )
     GunSelect(gun)
@@ -427,9 +428,9 @@ def main():
                 print('Current Time Sputtered: ' + str(timer) + " ," + str(donePercent) + "%")
                 if loadPower==0:
                     DeactivateRF()
-                    print("PSU Shorted, please wait for timer to finish before continuing")
+                    timer=s_timer+1
+                    print("PSU Shorted, please wait for valves to close before continuing")
                     print("Time Sputtered: " + str(timer) + "\n" + "Percent Sputtered: " + str(donePercent))
-
     
     ArduinoUnoSerial.close()
     ser.close()
