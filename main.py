@@ -87,7 +87,7 @@ def setLoadTunerCapPosition():
     CKSUM=CKSUM.to_bytes(2, 'big')      #converts integer CHKSUM to 2-byte hex, high byte first (big)
     command=command+CKSUM #appends 2-byte CHKSUM to command
     SendCommand(command)  
-    sleep(0.1)
+    sleep(5)
     return
 
 def setTuneTunerCapPosition():
@@ -105,7 +105,7 @@ def setTuneTunerCapPosition():
     CKSUM=CKSUM.to_bytes(2, 'big')      #converts integer CHKSUM to 2-byte hex, high byte first (big)
     command=command+CKSUM #appends 2-byte CHKSUM to command
     SendCommand(command) 
-    sleep(0.1)
+    sleep(5)
     return
 
 def autoSetTunerCaps():
