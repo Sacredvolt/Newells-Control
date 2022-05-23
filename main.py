@@ -107,13 +107,13 @@ def setTuneTunerCapPosition():
 
 def autoSetTunerCaps():
     reply = setTunerManual()
-    event.wait(0.1)
+    sputterEvent.wait(0.1)
     reply = setLoadTunerCapPosition()
-    event.wait(0.5)
+    sputterEvent.wait(0.5)
     reply = setTuneTunerCapPosition()
-    event.wait(0.5)
+    sputterEvent.wait(0.5)
     reply = setTunerAuto()
-    event.wait(0.1)
+    sputterEvent.wait(0.1)
     return reply
 
 def ActivateRF():
@@ -294,7 +294,7 @@ def openValvesfor(gun, s_timer):
         #sleep(s_timer-4)
         timer+=4
         while timer<s_timer:
-            event.wait(1)
+            sleep(1)
             timer+=1
             donePercent=round((timer/(s_timer) * 100),2)
         ShutterClose1(delay)
@@ -306,18 +306,18 @@ def openValvesfor(gun, s_timer):
         #sleep(s_timer-4)
         timer+=4
         while timer<s_timer:
-            event.wait(1)
+            sleep(1)
             timer+=1
             donePercent=round((timer/(s_timer-4) * 100),2)
         ShutterClose2(delay)
         ValRelease2(delay)
         print ("sputtering done on gun 2")
-    event.wait(delay)
+    sleep(delay)
     DeactivateRF()
     timer=0
     donePercent=0
     isSputtering=False
-    event.wait(delay)
+    sleep(delay)
     SetPower(0)
 
 ###############################################################################################################
@@ -331,10 +331,12 @@ def sputterThread():
     global percentageDone
     global entry4
     
+    sputterEvent=threading.Event()
+    
     while isRunning==True:
-        event.wait(1)
+        sputterEvent.wait(1)
         GetControl()
-        event.wait(1)
+        sputterEvent.wait(1)
         root = tk.Tk()
         canvas=tk.Canvas(root, height=HEIGHT, width=WIDTH)
         canvas.pack()
@@ -402,11 +404,13 @@ def main():
     global loadPower
     global donePercent
     
+    mainEvent=threading.Event()
+    
     ser=serial.Serial(findPort(PSUPID), 38400, timeout=0.5, bytesize=serial.EIGHTBITS, parity=serial.PARITY_NONE,  stopbits=1, rtscts=0, xonxoff=0)
     ArduinoUnoSerial = serial.Serial(findPort(ArduinoPID), 9600) 
     isRunning=True
     delay=0.5 #donotchange
-    event.wait(delay)
+    mainEvent.wait(delay)
     HEIGHT=600
     WIDTH=600
     isRFOn=False
@@ -421,7 +425,7 @@ def main():
     sputter.start()
 
     while isRunning==True:
-        event.wait(0.7)
+        mainEvent.wait(0.7)
         if isRFOn==True:
             forwardPower, reversePower, loadPower=GetPower()
             if isSputtering:
