@@ -107,13 +107,13 @@ def setTuneTunerCapPosition():
 
 def autoSetTunerCaps():
     reply = setTunerManual()
-    sleep(0.1)
+    sputterEvent.wait(0.1)
     reply = setLoadTunerCapPosition()
-    sleep(0.5)
+    sputterEvent.wait(0.5)
     reply = setTuneTunerCapPosition()
-    sleep(0.5)
+    sputterEvent.wait(0.5)
     reply = setTunerAuto()
-    sleep(0.1)
+    sputterEvent.wait(0.1)
     return reply
 
 def ActivateRF():
@@ -125,9 +125,6 @@ def ActivateRF():
 
 def DeactivateRF():
     global isRFOn
-    global isSputtering
-    global timer
-    global donePercent
     reply=GenAndSend('4252','0000','0000')
     isRFOn=False
     isSputtering=False
@@ -327,7 +324,6 @@ def openValvesfor(gun, s_timer):
 
 def sputterThread():
     global isRunning
-    global ser
     global delay
     global HEIGHT
     global WIDTH
@@ -335,7 +331,12 @@ def sputterThread():
     global percentageDone
     global entry4
     
+    sputterEvent=threading.Event()
+    
     while isRunning==True:
+        sputterEvent.wait(1)
+        GetControl()
+        sputterEvent.wait(1)
         root = tk.Tk()
         canvas=tk.Canvas(root, height=HEIGHT, width=WIDTH)
         canvas.pack()
@@ -388,41 +389,59 @@ def sputterThread():
         isRunning=False
     return
 
-ser=serial.Serial(findPort(PSUPID), 38400, timeout=0.5, bytesize=serial.EIGHTBITS, parity=serial.PARITY_NONE,  stopbits=1, rtscts=0, xonxoff=0)
-ArduinoUnoSerial = serial.Serial(findPort(ArduinoPID), 9600) 
-isRunning=True
-delay=0.5 #donotchange
-sleep(delay)
-HEIGHT=600
-WIDTH=600
-isRFOn=False
-isSputtering=False
-forwardPower=0
-reversePower=0
-loadPower=0
-donePercent=0
-timer=0
+def main():
+    global ser
+    global isRunning
+    global delay
+    global isSputtering
+    global isRFOn
+    global timer
+    global HEIGHT
+    global WIDTH
+    global ArduinoUnoSerial
+    global forwardPower
+    global reversePower
+    global loadPower
+    global donePercent
+    
+    mainEvent=threading.Event()
+    
+    ser=serial.Serial(findPort(PSUPID), 38400, timeout=0.5, bytesize=serial.EIGHTBITS, parity=serial.PARITY_NONE,  stopbits=1, rtscts=0, xonxoff=0)
+    ArduinoUnoSerial = serial.Serial(findPort(ArduinoPID), 9600) 
+    isRunning=True
+    delay=0.5 #donotchange
+    mainEvent.wait(delay)
+    HEIGHT=600
+    WIDTH=600
+    isRFOn=False
+    isSputtering=False
+    forwardPower=0
+    reversePower=0
+    loadPower=0
+    donePercent=0
+    timer=0
+    
+    sputter = threading.Thread(target=sputterThread)
+    sputter.start()
 
-sputter = threading.Thread(target=sputterThread)
-sputter.start()
-sleep(0.7)
-GetControl()
+    while isRunning==True:
+        mainEvent.wait(0.7)
+        if isRFOn==True:
+            forwardPower, reversePower, loadPower=GetPower()
+            if isSputtering:
+                print('Current Time Sputtered: ' + str(timer) + " ," + str(donePercent) + "%")
+                if loadPower==0:
+                    DeactivateRF()
+                    s_timer=int(entry4.get())
+                    timer=s_timer+1
+                    print("PSU Shorted, please wait for valves to close before continuing")
+                    print("Time Sputtered: " + str(timer) + "\n" + "Percent Sputtered: " + str(donePercent))
+        else:
+            pingOnce()
+            print("ping")
+            mainEvent.wait(0.7)
+    
+    ArduinoUnoSerial.close()
+    ser.close()
 
-while isRunning==True:
-    sleep(0.7)
-    if isRFOn==True:
-        forwardPower, reversePower, loadPower=GetPower()
-        if isSputtering:
-            print('Current Time Sputtered: ' + str(timer) + " ," + str(donePercent) + "%")
-            if loadPower==0:
-                DeactivateRF()
-                s_timer=int(entry4.get())
-                timer=s_timer+1
-                print("PSU Shorted, please wait for valves to close before continuing")
-                print("Time Sputtered: " + str(timer) + "\n" + "Percent Sputtered: " + str(donePercent))
-    else:
-        pingOnce()
-        print("ping")
-
-ArduinoUnoSerial.close()
-ser.close()
+main()
