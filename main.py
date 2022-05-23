@@ -17,30 +17,30 @@ def GenerateCommand(CMDID, PARM1, PARM2):
 
 def SendCommand(command):
     ser.write(command)
-    reading=ser.read(50)
-    return reading
+    #reading=ser.read(50)
+    return #reading
 
 def GenAndSend(CMDID, PARM1, PARM2):
     command=GenerateCommand(CMDID, PARM1, PARM2)
-    reading=SendCommand(command)
-    return reading
+    SendCommand(command)
+    sleep(0.1)
+    return
 
 def pingOnce():
-    replyPing=GenAndSend('4250','0000','0000')
-    return replyPing
+    GenAndSend('4250','0000','0000')
+    return
         
 def GetControl():
-    reply=GenAndSend('4243','5555','0000')
-    print(reply.hex())
-    return reply
+    GenAndSend('4243','5555','0000')
+    return
 
 def RelControl():
-    reply=GenAndSend('4243','0000','0000')
-    print(reply.hex())
-    return reply
+    GenAndSend('4243','0000','0000')
+    return
 
 def GetPower():
-    reply=GenAndSend('4750','0000','0000')
+    GenAndSend('4750','0000','0000')
+    reply=ser.read(50)
     reply=reply[5:-2]
     forwardPower=reply[:2]
     reversePower=reply[2:4]
@@ -62,8 +62,9 @@ def SetPower(desiredPower):
         CKSUM=CKSUM+i
     CKSUM=CKSUM.to_bytes(2, 'big')      #converts integer CHKSUM to 2-byte hex, high byte first (big)
     command=command+CKSUM #appends 2-byte CHKSUM to command
-    reply=SendCommand(command)
-    return reply
+    SendCommand(command)
+    sleep(0.1)
+    return
 
 def setTunerAuto():
     return GenAndSend('544D', '0001', '0000')
@@ -85,8 +86,9 @@ def setLoadTunerCapPosition():
         CKSUM=CKSUM+i
     CKSUM=CKSUM.to_bytes(2, 'big')      #converts integer CHKSUM to 2-byte hex, high byte first (big)
     command=command+CKSUM #appends 2-byte CHKSUM to command
-    reply=SendCommand(command)   
-    return reply
+    SendCommand(command)  
+    sleep(0.1)
+    return
 
 def setTuneTunerCapPosition():
     desiredTune=int(70)
@@ -102,38 +104,35 @@ def setTuneTunerCapPosition():
         CKSUM=CKSUM+i
     CKSUM=CKSUM.to_bytes(2, 'big')      #converts integer CHKSUM to 2-byte hex, high byte first (big)
     command=command+CKSUM #appends 2-byte CHKSUM to command
-    reply=SendCommand(command)   
-    return reply
+    SendCommand(command) 
+    sleep(0.1)
+    return
 
 def autoSetTunerCaps():
-    reply = setTunerManual()
-    sleep(0.1)
-    reply = setLoadTunerCapPosition()
-    sleep(0.5)
-    reply = setTuneTunerCapPosition()
-    sleep(0.5)
-    reply = setTunerAuto()
-    sleep(0.1)
-    return reply
+    setTunerManual()
+    setLoadTunerCapPosition()
+    setTuneTunerCapPosition()
+    setTunerAuto()
+    return 
 
 def ActivateRF():
     global isRFOn
     autoSetTunerCaps()
-    reply=GenAndSend('4252','5555','0000')
+    GenAndSend('4252','5555','0000')
     isRFOn=True
-    return reply
+    return
 
 def DeactivateRF():
     global isRFOn
     global isSputtering
     global timer
     global donePercent
-    reply=GenAndSend('4252','0000','0000')
+    GenAndSend('4252','0000','0000')
     isRFOn=False
     isSputtering=False
     timer=0
     donePercent=0
-    return reply
+    return
 
 ###############################################################################################################
 
@@ -327,12 +326,10 @@ def openValvesfor(gun, s_timer):
 
 def sputterThread():
     global isRunning
-    global ser
     global delay
     global HEIGHT
     global WIDTH
     global isRFOn
-    global donePercent
     global entry4
     
     while isRunning==True:
