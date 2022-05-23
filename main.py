@@ -372,10 +372,10 @@ def sputterThread():
         button4=tk.Button(buttonFrame, text="Confirm", fg='white', bg='grey', command=lambda:threading.Thread(openValvesfor(int(entry42.get()), int(entry4.get()))))
         button4.grid(row=3, column=2, rowspan=2)
                 
-        # label5 = tk.Label(buttonFrame, text="Set Tuner Caps", fg='white', bg='black')
-        # label5.grid(row=5, column=0)
-        # button5=tk.Button(buttonFrame, text="Confirm", fg='white', bg='grey', command=lambda:autoSetTunerCaps())
-        # button5.grid(row=5, column=1, rowspan=1)
+        label5 = tk.Label(buttonFrame, text="Set Tuner Caps", fg='white', bg='black')
+        label5.grid(row=5, column=0)
+        button5=tk.Button(buttonFrame, text="Confirm", fg='white', bg='grey', command=lambda:autoSetTunerCaps())
+        button5.grid(row=5, column=1, rowspan=1)
         
         # label6 = tk.Label(buttonFrame, text="Set Tuner Caps", fg='white', bg='black')
         # label6.grid(row=6, column=0)
