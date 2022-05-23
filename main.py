@@ -332,7 +332,7 @@ def sputterThread():
     global HEIGHT
     global WIDTH
     global isRFOn
-    global percentageDone
+    global donePercent
     global entry4
     
     while isRunning==True:
