@@ -284,7 +284,6 @@ def openValvesfor(gun, s_timer):
     global isSputtering
     global donePercent
     global timer
-    global s_timer
     
     print ("You will sputter Gun " + str(gun) +"for" +str(s_timer) +"seconds" )
     GunSelect(gun)
@@ -330,6 +329,7 @@ def sputterThread():
     global WIDTH
     global isRFOn
     global percentageDone
+    global entry4
     
     while isRunning==True:
         event.wait(1)
@@ -428,6 +428,7 @@ def main():
                 print('Current Time Sputtered: ' + str(timer) + " ," + str(donePercent) + "%")
                 if loadPower==0:
                     DeactivateRF()
+                    s_timer=int(entry4.get())
                     timer=s_timer+1
                     print("PSU Shorted, please wait for valves to close before continuing")
                     print("Time Sputtered: " + str(timer) + "\n" + "Percent Sputtered: " + str(donePercent))
