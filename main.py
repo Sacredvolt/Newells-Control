@@ -439,6 +439,7 @@ def main():
         else:
             pingOnce()
             print("ping")
+            mainEvent.wait(0.7)
     
     ArduinoUnoSerial.close()
     ser.close()
