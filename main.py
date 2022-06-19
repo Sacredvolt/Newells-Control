@@ -45,7 +45,6 @@ def GetPower():
     forwardPower=reply[:2]
     reversePower=reply[2:4]
     loadPower=reply[4:]
-    print(forwardPower, reversePower, loadPower)
     return forwardPower, reversePower, loadPower
 
 def SetPower(desiredPower):
@@ -409,6 +408,7 @@ while isRunning==True:
     sleep(0.7)
     if isRFOn==True:
         forwardPower, reversePower, loadPower=GetPower()
+        print("FP: ", fowardPower, " RP: ", reversePower, " DC: ", loadPower)
         if isSputtering:
             print('Current Time Sputtered: ' + str(timer) + " ," + str(donePercent) + "%")
             if loadPower==0:
@@ -418,8 +418,7 @@ while isRunning==True:
                 print("PSU Shorted, please wait for valves to close before continuing")
                 print("Time Sputtered: " + str(timer) + "\n" + "Percent Sputtered: " + str(donePercent))
     else:
-        pingOnce()
-        print("ping")
+        GetControl()
 
 ArduinoUnoSerial.close()
 ser.close()
